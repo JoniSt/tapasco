@@ -91,7 +91,7 @@
 
     set reset_in [create_bd_pin -dir I -type rst "reset_in"]
     set clk_wiz [::tapasco::ip::create_clk_wiz "clk_wiz"]
-    set_property -dict [list CONFIG.USE_LOCKED {false} CONFIG.USE_RESET {false}] $clk_wiz
+    set_property -dict [list CONFIG.USE_LOCKED {true} CONFIG.USE_RESET {false}] $clk_wiz
     set clk_mode [lindex [get_board_part_interfaces -filter { NAME =~ *sys*cl*k }] 0]
 
     if {$clk_mode != ""} {
@@ -163,10 +163,12 @@
       } {
         set_property -dict [list CONFIG.CLKOUT${clkn}_USED {true} CONFIG.CLKOUT${clkn}_REQUESTED_OUT_FREQ $freq] $clk_wiz
         set clkp [get_bd_pins "$clk_wiz/clk_out${clkn}"]
+        set lockedp [get_bd_pins "$clk_wiz/locked"]
         set rstgen [::tapasco::ip::create_rst_gen "${name}_rst_gen"]
         connect_bd_net $clkp $clk
         connect_bd_net $reset_in [get_bd_pins "$rstgen/ext_reset_in"]
         connect_bd_net $clkp [get_bd_pins "$rstgen/slowest_sync_clk"]
+        connect_bd_net $lockedp [get_bd_pins "$rstgen/dcm_locked"]
         connect_bd_net [get_bd_pins "$rstgen/peripheral_reset"] $p_rst
         connect_bd_net [get_bd_pins "$rstgen/peripheral_aresetn"] $p_rstn
         connect_bd_net [get_bd_pins "$rstgen/interconnect_aresetn"] $i_rstn
