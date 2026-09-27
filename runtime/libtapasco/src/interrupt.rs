@@ -22,7 +22,7 @@ use std::fmt::Debug;
 use crate::tlkm::tlkm_ioctl_reg_interrupt;
 use crate::tlkm::tlkm_register_interrupt;
 use nix::sys::eventfd::{EfdFlags, EventFd};
-use nix::unistd::{close, read};
+use nix::unistd::read;
 use snafu::ResultExt;
 use std::fs::File;
 use std::os::unix::prelude::*;
@@ -64,7 +64,6 @@ pub struct Interrupt {
 
 impl Drop for SimInterrupt {
     fn drop(&mut self) {
-        let _ = close(self.interrupt.as_raw_fd());
         trace!("deregistering interrupt: {:?}", self.interrupt);
         let _ = self.client.deregister_interrupt(DeregisterInterrupt { fd: self.interrupt.as_raw_fd() }).context(SimClientSnafu);
     }
@@ -72,7 +71,6 @@ impl Drop for SimInterrupt {
 
 impl Drop for Interrupt {
     fn drop(&mut self) {
-        let _ = close(self.interrupt.as_raw_fd());
         trace!("deregistering interrupt: {:?}", self.interrupt);
     }
 }

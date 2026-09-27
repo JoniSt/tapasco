@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 
 project(
   tapasco
@@ -41,7 +41,8 @@ set_property(
   TARGET tapasco
   PROPERTY PUBLIC_HEADER ${CMAKE_CURRENT_BINARY_DIR}/tapasco.h
            ${CMAKE_CURRENT_BINARY_DIR}/tapasco_inner.hpp
-           ${CMAKE_CURRENT_SOURCE_DIR}/src/tapasco.hpp)
+           ${CMAKE_CURRENT_SOURCE_DIR}/src/tapasco.hpp
+           ${CMAKE_CURRENT_SOURCE_DIR}/src/plugins/tapasco-nvme.hpp)
 
 include(GNUInstallDirs)
 

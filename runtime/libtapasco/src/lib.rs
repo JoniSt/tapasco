@@ -49,3 +49,4 @@ pub mod tlkm;
 pub mod sim_client;
 pub mod protos;
 pub mod mmap_mut;
+pub mod plugins;

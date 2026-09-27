@@ -150,23 +150,25 @@ Compatibility <a name="compatibility"/>
 
 ### Custom PEs
 
-Since the PE is working with virtual addresses, the minimum address width of the memory AXI interfaces is *47 bit*. 
+Since the PE is working with virtual addresses, the address width of the memory AXI interface must be wide enough to hold user-space virtual addresses.
+Virtual addresses are *47 bit* wide on systems with 4-level paging, and up to *56 bit* in case of 5-level-paging.
 
 ### Linux kernel <a name="kernel"/>
 
 We use the [Linux HMM API](https://www.kernel.org/doc/html/latest/vm/hmm.html) as OS support
-for our page migrations. This requires at least Linux kernel version ```5.10.x```. Also, the 
-```CONFIG_DEVICE_PRIVATE``` flag must be enabled during kernel compilation. This may e.g. not
-be the case for prebuilt kernels for CentOS 7.
+for our page migrations. Currently, our driver is compatible with Linux Kernel versions from ```6.2.x``` to ```6.5.x```. Also, the
+```CONFIG_DEVICE_PRIVATE``` flag must be enabled during kernel compilation. This may not
+be the case for prebuilt kernels in some Linux distributions.
 
 ### TaPaSCo features and platforms
 
-SVM support is currently available on the Alveo U280 and XUPVVH(-ES) platforms. It is not compatible
-with PE-local memories and HBM, but uses only DDR memory. Compatibility to other TaPaSCo
-features is not guaranteed.
+SVM support is currently available on the Alveo U50, Alveo U280 and XUPVVH(-ES) platforms. It is not compatible
+with PE-local memories and HBM, but uses only DDR memory (HBM is used as standard memory on the Alveo U50).
+Compatibility to other TaPaSCo features is not guaranteed.
 
 References
 ----------
 [Kalkhof2021] Kalkhof, T., and Koch, A. (2021). Efficient Physical Page Migrations in Shared Virtual Memory Reconfigurable Computing Systems. In *International Conference on Field-Programmable Technology (FPT)*.<a name="FPT_paper"/>
+
 [Kalkhof2022] Kalkhof, T., and Koch, A. (2022). Direct Device-to-Device Page Migrations in Multi-FPGA Shared Virtual Memory Systems. In *International Conference on Field Programmable Logic (FPL)*.<a name="FPL_paper"/>
 

@@ -74,6 +74,9 @@ pub enum Error {
 
     #[snafu(display("Failed to retrieve default memory: {}", source))]
     RetrieveDefaultMemory { source: crate::device::Error },
+
+    #[snafu(display("Error in plugin: {}", source))]
+    FFIPluginError { source: crate::plugins::plugin::Error },
 }
 
 //////////////////////
@@ -779,6 +782,9 @@ pub unsafe extern "C" fn tapasco_job_release(
             if !return_value.is_null() {
                 *return_value = x.0;
             }
+
+            // free job object
+            let _j = Box::<Job>::from_raw(job);
             0
         }
         Err(e) => {

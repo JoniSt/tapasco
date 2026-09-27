@@ -43,6 +43,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <cstring>
+#include <array>
 
 #include <tapasco_inner.hpp>
 
@@ -239,6 +241,21 @@ private:
 };
 using job_future = JobFuture;
 
+template<size_t sz>
+struct ArgRawType {
+  using type = std::array<char, sz>;
+};
+
+template<>
+struct ArgRawType<sizeof(uint64_t)> {
+  using type = uint64_t;
+};
+
+template<>
+struct ArgRawType<sizeof(uint32_t)> {
+  using type = uint32_t;
+};
+
 class JobArgumentList {
 public:
   JobArgumentList(Device *d) : device(d) { new_list(); }
@@ -342,19 +359,22 @@ private:
 
   /* Collector methods: bottom half of job launch. @} */
 
-  /* @{ Setters for register values */
-  /** Sets a single value argument. **/
-  template <typename T> void set_arg(T t) {
-    // only 32/64bit values can be passed directly (i.e., via register)
-    if (sizeof(T) == 4) {
-      this->single32((uint32_t)t);
-    } else if (sizeof(T) == 8) {
-      this->single64((uint64_t)t);
-    } else if (sizeof(T) > 8) {
+  template<typename T>
+  void set_raw_arg(const T&) {
+    if (sizeof(T) > 8) {
       throw tapasco_error("Please supply large arguments as wrapped pointers.");
     } else {
       throw tapasco_error("TaPaSCo supports 32 or 64 bit argument types or buffers. You provided an argument smaller than 32 bits.");
     }
+  }
+
+  /* @{ Setters for register values */
+  /** Sets a single value argument. **/
+  template <typename T> void set_arg(T t) {
+    // only 32/64bit values can be passed directly (i.e., via register)
+    typename ArgRawType<sizeof(T)>::type raw_bits{};
+    std::memcpy(&raw_bits, &t, sizeof(raw_bits));
+    set_raw_arg(raw_bits);
   }
 
   /** Sets a single pointer argument (alloc + copy). **/
@@ -407,6 +427,18 @@ private:
     this->streamop((uint8_t *)t.value, t.sz, true);
   }
 };
+
+
+template<>
+inline void JobArgumentList::set_raw_arg<uint32_t>(const uint32_t& t) {
+  this->single32(t);
+}
+
+template<>
+inline void JobArgumentList::set_raw_arg<uint64_t>(const uint64_t& t) {
+  this->single64(t);
+}
+
 
 class TapascoMemory {
 public:
@@ -620,7 +652,6 @@ public:
 
   TapascoPE *acquire_pe_without_job(PEId pe_id) {
     SinglePEHandler *pe = tapasco_device_acquire_pe_without_job(this->device, pe_id);
-    std::cout << "PE: " << pe << std::endl;
     if (pe == 0) {
       handle_error();
     }
@@ -918,6 +949,16 @@ struct Tapasco {
     return default_legacy_caps & cap;
   }
 
+  /**
+   * Returns a pointer to the plugin object specified as type parameter
+   *
+   * CAUTION: Plugin pointer may become invalid as soon as the related
+   * TaPaSCo device is out-of-scope and/or is destroyed
+   */
+  template<typename T>
+  T get_plugin() {
+    return T::get_instance(this->device_internal.get_device());
+  }
 private:
 
   /* {@ Callback generation methods. */

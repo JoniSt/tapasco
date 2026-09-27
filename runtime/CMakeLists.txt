@@ -17,15 +17,15 @@
 # with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 project(TapascoInstall)
 
 set(CPACK_GENERATOR "RPM" "DEB" "TGZ" "ZIP" "STGZ" "TBZ2")
 set(CPACK_PACKAGE_CONTACT "tapasco@esa.tu-darmstadt.de")
 
-set(CPACK_PACKAGE_VERSION_MAJOR 2024)
-set(CPACK_PACKAGE_VERSION_MINOR 1)
-set(CPACK_PACKAGE_VERSION_PATCH 0)
+set(CPACK_PACKAGE_VERSION_MAJOR 2025)
+set(CPACK_PACKAGE_VERSION_MINOR 12)
+set(CPACK_PACKAGE_VERSION_PATCH 1)
 set(CPACK_PACKAGE_NAME tapasco)
 
 include(CPack)
