@@ -76,8 +76,9 @@ private object VivadoHighLevelSynthesis extends HighLevelSynthesizer {
           OtherError(HighLevelSynthesizerLog(logfile), new RuntimeException())
         }
       }
-      val vivado_hls_cmd = Seq("timeout", (cfg.hlsTimeOut getOrElse (24 * 60 * 60)).toString) ++ (hlsCommand.get) ++ Seq(script.toString)
-      logger.info("Vivado HLS: {}", vivado_hls_cmd)
+      val vivado_hls_cmd = Seq("timeout", (cfg.hlsTimeOut getOrElse (24 * 60 * 60)).toString, hlsCommand.get,
+        "-f", script.toString,
+        "-l", logfile.toString)
       val process = Process(vivado_hls_cmd, script.getParent.toFile)
       val vivadoRet = InterruptibleProcess(process,
          waitMillis = Some(( cfg.hlsTimeOut getOrElse (24 * 60 * 60) ) * 1000 + 1000) )
@@ -211,23 +212,15 @@ private object VivadoHighLevelSynthesis extends HighLevelSynthesizer {
     } fold true) (_ && _)
   }
 
-  private var hlsCommand : Option[Seq[String]] = None
+  private var hlsCommand : Option[String] = None
 
   private def detectHLSCommand(): Boolean = {
     // Vivado/Vitis 2020.2 has renamed vivado_hls to vitis_hls, but the interfaces are still compatible.
     // We try to detect the correct command here by trying to run each command and see which gives us
     // a zero return value.
     try {
-      if(Seq("vitis-run", "-v").! == 0) {
-        hlsCommand = Some(Seq("vitis-run", "--mode", "hls", "--tcl"))
-        return true
-      }
-    } catch {
-      case _ : Throwable => logger.trace("vitis not available")
-    }
-    try {
       if(Seq("vitis_hls", "-version").! == 0) {
-        hlsCommand = Some(Seq("vitis_hls", "-f"))
+        hlsCommand = Some("vitis_hls")
         return true
       }
     } catch {
@@ -236,7 +229,7 @@ private object VivadoHighLevelSynthesis extends HighLevelSynthesizer {
     }
     try{
       if(Seq("vivado_hls", "-version").! == 0){
-        hlsCommand = Some(Seq("vivado_hls", "-f"))
+        hlsCommand = Some("vivado_hls")
         return true
       }
     } catch {
